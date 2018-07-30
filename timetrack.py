@@ -89,6 +89,8 @@ if column_offset == 2:
 
 worked = ' Worked: {} today.'.format(worked) if worked else ''
 display = 'BEGIN' if column_offset == 1 else 'END'
-printable = [display, args.worksheet, now.strftime('%H:%M'), now.strftime("%H:%M"), worked]
+printable = [display, args.worksheet, now.strftime('%H:%M'), now.strftime("%d.%m.%Y"), worked]
 
+print('==========================================================')
 print('Updated {} time log for {} at {} on date {}.{}'.format(*printable))
+print('==========================================================')
