@@ -1,7 +1,7 @@
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
-import time
 import argparse
+import datetime
 
 
 """
@@ -13,6 +13,10 @@ python3 timetrack.py (start | end) <spreadsheet-id> <worksheet-name> <path-to-cr
 e.g.
 python3 timetrack.py start 1HYUt1Y0UVAvGLRsBb6Esbsj6hnc3hI0XmHHHzbRlbnb James /home/james/credentials.json
 """
+def round_minutes(dt, direction, resolution):
+    new_minute = (dt.minute // resolution + (1 if direction == 'up' else 0)) * resolution
+    return dt + datetime.timedelta(minutes=new_minute - dt.minute)
+
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(dest='command')
@@ -31,8 +35,17 @@ scope = ['https://spreadsheets.google.com/feeds',
 credentials = ServiceAccountCredentials.from_json_keyfile_name(args.credentials, scope)
 gc = gspread.authorize(credentials)
 
+now = datetime.datetime.now()
+
 sheet = gc.open_by_key(args.spreadsheet)
 worksheet = sheet.worksheet(args.worksheet)
-date_cell = worksheet.find(time.strftime("%d.%m.%Y"))
-column_offset = 1 if args.command == 'start' else 2
-worksheet.update_cell(date_cell.row, date_cell.col + column_offset, time.strftime("%H:%M"))
+date_cell = worksheet.find(now.strftime("%d.%m.%Y"))
+
+if args.command == 'start':
+	column_offset = 1
+	rounded_now = round_minutes(now, 'down', 15)
+else:
+	column_offset = 2
+	rounded_now = round_minutes(now, 'up', 15)
+
+worksheet.update_cell(date_cell.row, date_cell.col + column_offset, rounded_now.strftime("%H:%M"))
