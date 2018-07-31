@@ -25,8 +25,10 @@ def round_minutes(dt, direction, resolution):
     new_minute = (dt.minute // resolution + (1 if direction == 'up' else 0)) * resolution
     return dt + datetime.timedelta(minutes=new_minute - dt.minute)
 
-
 def get_user():
+    """
+    map your username to your spreadsheet name here if it is not just user.title()
+    """
     fix_names = {'hukkinj1': 'Taneli'}
     username = getpass.getuser()
     return fix_names.get(username, username.title())
@@ -90,7 +92,7 @@ worked = None
 if column_offset == 2:
     column_offset = 4
     started = worksheet.cell(date_cell.row, date_cell.col+1).value
-    delta = now - datetime.datetime.strptime(started, '%H:%M') - datetime.timedelta(minutes=30)
+    delta = rounded_now - datetime.datetime.strptime(started, '%H:%M') - datetime.timedelta(minutes=30)
     worked = str(delta).rsplit(':', 1)[0].split(', ', 1)[-1]
     worksheet.update_cell(date_cell.row, date_cell.col + column_offset, worked)
 
