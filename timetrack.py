@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import argparse
 import datetime
 import os
@@ -23,6 +21,10 @@ try just running ./timetrack.py
 If your username differs a lot from spreadsheet name, update fix_names
 
 """
+def round_minutes(dt, direction, resolution):
+    new_minute = (dt.minute // resolution + (1 if direction == 'up' else 0)) * resolution
+    return dt + datetime.timedelta(minutes=new_minute - dt.minute)
+
 
 def get_user():
     fix_names = {'hukkinj1': 'Taneli'}
@@ -35,14 +37,13 @@ start_parser = subparsers.add_parser('start')
 end_parser = subparsers.add_parser('end')
 
 try:
-    with open('.config.json') as f:
+    with open(os.path.expanduser('~/.timetrack.json'), 'r') as f:
         json_data = json.load(f)
     credentials = os.path.expanduser(json_data['credentials'])
     cred_names = ['-c', '--credentials']
 except:
     credentials = None
-    print('Warning: no .config.json, so you gotta pass stuff in.')
-
+    print('Warning: no ~/.config.json found, so you gotta pass stuff in.')
 try:
     spread_id = json_data['spreadsheet']
     spread_names = ['-s', '--spreadsheet']
@@ -64,6 +65,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(args.credentials,
 gc = gspread.authorize(credentials)
 
 now = datetime.datetime.now()
+
 sheet = gc.open_by_key(args.spreadsheet)
 worksheet = sheet.worksheet(args.worksheet)
 date_cell = worksheet.find(now.strftime("%d.%m.%Y"))
@@ -76,7 +78,12 @@ elif args.command == 'start':
 else:
     column_offset = 2
 
-worksheet.update_cell(date_cell.row, date_cell.col + column_offset, now.strftime('%H:%M'))
+if column_offset == 1:
+    rounded_now = round_minutes(now, 'down', 15)
+elif column_offset == 2:
+    rounded_now = round_minutes(now, 'up', 15)
+
+worksheet.update_cell(date_cell.row, date_cell.col + column_offset, rounded_now.strftime("%H:%M"))
 worked = None
 
 # if we are doing end of day, do time worked as well
@@ -91,6 +98,6 @@ worked = ' Worked: {} today.'.format(worked) if worked else ''
 display = 'BEGIN' if column_offset == 1 else 'END'
 printable = [display, args.worksheet, now.strftime('%H:%M'), now.strftime("%d.%m.%Y"), worked]
 
-print('==========================================================')
+print('=============================================================')
 print('Updated {} time log for {} at {} on date {}.{}'.format(*printable))
-print('==========================================================')
+print('=============================================================')
