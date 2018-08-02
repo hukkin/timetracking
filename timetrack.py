@@ -45,7 +45,7 @@ if args.start:
 elif args.end:
     cell_to_edit = end_cell
 else:
-    start_filled = worksheet.cell(date_cell.row, date_cell.col + 1).value
+    start_filled = worksheet.cell(*start_cell).value
     cell_to_edit = end_cell if start_filled else start_cell
 
 if cell_to_edit == start_cell:
