@@ -48,9 +48,7 @@ else:
     start_filled = worksheet.cell(*start_cell).value
     cell_to_edit = end_cell if start_filled else start_cell
 
-if cell_to_edit == start_cell:
-    rounded_now = round_minutes(now, 'down', 15)
-else:
-    rounded_now = round_minutes(now, 'up', 15)
+rounding_direction = 'down' if cell_to_edit == start_cell else 'up'
+rounded_now = round_minutes(now, rounding_direction, 15)
 
 worksheet.update_cell(*cell_to_edit, rounded_now.strftime("%H:%M"))
