@@ -8,10 +8,10 @@ import datetime
 Requirements:
 pip3 install --upgrade oauth2client gspread
 
-Usage example:
-python3 timetrack.py (start | end) <spreadsheet-id> <worksheet-name> <path-to-credentials-json>
+Usage:
+python3 timetrack.py [--start | --end] <spreadsheet-id> <worksheet-name> <path-to-credentials-json>
 e.g.
-python3 timetrack.py start 1HYUt1Y0UVAvGLRsBb6Esbsj6hnc3hI0XmHHHzbRlbnb James /home/james/credentials.json
+python3 timetrack.py --start 1HYUt1Y0UVAvGLRsBb6Esbsj6hnc3hI0XmHHHzbRlbnb James /home/james/credentials.json
 """
 def round_minutes(dt, direction, resolution):
     new_minute = (dt.minute // resolution + (1 if direction == 'up' else 0)) * resolution
@@ -19,16 +19,13 @@ def round_minutes(dt, direction, resolution):
 
 
 parser = argparse.ArgumentParser()
-subparsers = parser.add_subparsers(dest='command')
-start_parser = subparsers.add_parser('start')
-end_parser = subparsers.add_parser('end')
-
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--start', action='store_true')
+group.add_argument('--end', action='store_true')
 parser.add_argument('spreadsheet', help='Spreadsheet id')
 parser.add_argument('worksheet', help='Worksheet name')
 parser.add_argument('credentials', help='Credentials json path')
-
 args = parser.parse_args()
-
 
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
@@ -40,12 +37,20 @@ now = datetime.datetime.now()
 sheet = gc.open_by_key(args.spreadsheet)
 worksheet = sheet.worksheet(args.worksheet)
 date_cell = worksheet.find(now.strftime("%d.%m.%Y"))
+start_cell = (date_cell.row, date_cell.col + 1)
+end_cell = (date_cell.row, date_cell.col + 2)
 
-if args.command == 'start':
-	column_offset = 1
-	rounded_now = round_minutes(now, 'down', 15)
+if args.start:
+    cell_to_edit = start_cell
+elif args.end:
+    cell_to_edit = end_cell
 else:
-	column_offset = 2
-	rounded_now = round_minutes(now, 'up', 15)
+    start_filled = worksheet.cell(date_cell.row, date_cell.col + 1).value
+    cell_to_edit = end_cell if start_filled else start_cell
 
-worksheet.update_cell(date_cell.row, date_cell.col + column_offset, rounded_now.strftime("%H:%M"))
+if cell_to_edit == start_cell:
+    rounded_now = round_minutes(now, 'down', 15)
+else:
+    rounded_now = round_minutes(now, 'up', 15)
+
+worksheet.update_cell(*cell_to_edit, rounded_now.strftime("%H:%M"))
