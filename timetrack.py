@@ -37,16 +37,10 @@ now = datetime.datetime.now()
 sheet = gc.open_by_key(args.spreadsheet)
 worksheet = sheet.worksheet(args.worksheet)
 date_cell = worksheet.find(now.strftime("%d.%m.%Y"))
-start_cell = (date_cell.row, date_cell.col + 1)
-end_cell = (date_cell.row, date_cell.col + 2)
 
-if args.start:
-    cell_to_edit = start_cell
-elif args.end:
-    cell_to_edit = end_cell
-else:
-    start_filled = worksheet.cell(*start_cell).value
-    cell_to_edit = end_cell if start_filled else start_cell
+cell_to_edit = (date_cell.row, date_cell.col + 1 + args.end)
+if not args.start and not args.end:
+    cell_to_edit = (cell_to_edit[0], cell_to_edit[1] + bool(worksheet.cell(*cell_to_edit).value))
 
 rounding_direction = 'down' if cell_to_edit == start_cell else 'up'
 rounded_now = round_minutes(now, rounding_direction, 15)
