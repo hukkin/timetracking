@@ -38,11 +38,9 @@ sheet = gc.open_by_key(args.spreadsheet)
 worksheet = sheet.worksheet(args.worksheet)
 date_cell = worksheet.find(now.strftime("%d.%m.%Y"))
 
-cell_to_edit = (date_cell.row, date_cell.col + 1 + args.end)
-roundind_direction = 'down' if args.start else 'up'
-if not args.start and not args.end:
-    cell_to_edit = (cell_to_edit[0], cell_to_edit[1] + bool(worksheet.cell(*cell_to_edit).value))
-    rounding_direction = 'up'
+is_start = args.start or (not args.start and not args.end and not worksheet.cell(date_cell.row, date_cell.col + 1).value)
+rounding_direction = 'down' if is_start else 'up'
+cell_to_edit = (date_cell.row, date_cell.col + 1 + (rounding_direction is 'up'))
     
 rounded_now = round_minutes(now, rounding_direction, 15)
 worksheet.update_cell(*cell_to_edit, rounded_now.strftime("%H:%M"))
