@@ -38,7 +38,7 @@ sheet = gc.open_by_key(args.spreadsheet)
 worksheet = sheet.worksheet(args.worksheet)
 date_cell = worksheet.find(now.strftime("%d.%m.%Y"))
 
-edit_end_cell = args.end or (not args.start and not args.end and worksheet.cell(date_cell.row, date_cell.col + 1).value)
+edit_end_cell = bool(args.end or (not args.start and not args.end and worksheet.cell(date_cell.row, date_cell.col + 1).value))
 rounding_direction = 'up' if edit_end_cell else 'down'
 cell_to_edit = (date_cell.row, date_cell.col + 1 + edit_end_cell)
 
