@@ -44,3 +44,8 @@ cell_to_edit = (date_cell.row, date_cell.col + 1 + edit_end_cell)
 
 rounded_now = round_minutes(now, rounding_direction, 15)
 worksheet.update_cell(*cell_to_edit, rounded_now.strftime("%H:%M"))
+
+# edit start cell if it is still empty
+start_value = worksheet.cell(date_cell.row, date_cell.col + 1).value
+if not start_value:
+    worksheet.update_cell(date_cell.row, date_cell.col + 1, round_minutes(now, 'down', 15).strftime("%H:%M"))
