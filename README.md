@@ -14,8 +14,10 @@ python3 timetrack.py [--start | --end] <spreadsheet-id> <worksheet-name> <path-t
 ```
 With example arguments:
 ```bash
-python3 timetrack.py --start 1HYUt1Y0UVAvGLRsBb6Esbsj6hnc3hI0XmHHHzbRlbnb James /home/james/credentials.json
+python3 timetrack.py 1HYUt1Y0UVAvGLRsBb6Esbsj6hnc3hI0XmHHHzbRlbnb James /home/james/credentials.json
 ```
+The `--start` and `--end` flags can be used to force the script to update a specific field. When omitted, the script works as explained in section "What's this for".
+
 Ask another team member for the credentials file. The spreadsheet id you'll find in the spreadsheet URL.
 
 
@@ -39,7 +41,7 @@ timetrack
 
 
 ## Run automation
-Make the following cronjob (edit the path to the shell script to what you set up for yourself earlier):
+Make the following cronjob (edit the path to the shell script's path that you set up for yourself earlier):
 ```
 */15 * * * * ~/bin/timetrack >/dev/null 2>&1
 ```
