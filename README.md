@@ -34,7 +34,7 @@ chmod +x ~/bin/timetrack
 
 After this, you can simply run the script by running
 ```bash
-timetracking
+timetrack
 ```
 
 
